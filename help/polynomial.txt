@@ -1,0 +1,56 @@
+Polynomials - ArithFuns Package
+
+Create and manipulate polynomials with exact rational coefficients.
+
+CONSTRUCTORS:
+  Poly(coeffs)              - Create polynomial from coefficients (ascending)
+  Poly(coeffs, var)         - Specify variable name (default "x")
+
+PROPERTIES (via decorations):
+  Get(P, "degree")          - Polynomial degree
+  Get(P, "coeffs")          - Coefficient sequence
+  Get(P, "var")             - Variable name
+  PolyCoeff(P, n)           - Get nth coefficient (0-indexed)
+
+EVALUATION:
+  PolyEval(P, x)            - Evaluate P(x) directly
+  PolyHorner(P, x)          - Evaluate using Horner's method
+  PolyHorner(P, x, 1)       - Show intermediate steps
+
+ARITHMETIC:
+  PolyAdd(P, Q)             - Add polynomials
+  PolySub(P, Q)             - Subtract: P - Q
+  PolyMul(P, Q)             - Multiply polynomials
+  PolyScale(P, c)           - Multiply by scalar: c·P
+  PolyNeg(P)                - Negate: -P
+
+DIVISION:
+  PolyDiv(P, Q)             - Divide: returns {quotient, remainder}
+  PolyMod(P, Q)             - Remainder of P/Q
+  PolyGCD(P, Q)             - Polynomial GCD
+
+CALCULUS:
+  PolyDer(P)                - First derivative
+  PolyDer(P, n)             - nth derivative
+  PolyInt(P)                - Indefinite integral (constant = 0)
+  PolyInt(P, c)             - Integral with constant c
+
+COMPOSITION:
+  PolyCompose(P, Q)         - P(Q(x)) - compose polynomials
+
+EXAMPLES:
+  P := Poly({1, 2, 3})      # 1 + 2x + 3x²
+  PolyEval(P, 2)            → 17
+  
+  Q := Poly({1, -1})        # 1 - x
+  PolyMul(P, Q)             → Poly({1, 1, 1, -3})
+  
+  PolyDer(P)                → Poly({2, 6})  # 2 + 6x
+  
+  Get(P, "degree")          → 2
+
+NOTES:
+  - Coefficients are in ascending order: {a₀, a₁, a₂, ...}
+  - This matches internal storage but differs from written notation
+  - Zero polynomial has degree -1 by convention
+  - All coefficients are exact rationals

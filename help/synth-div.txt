@@ -1,0 +1,57 @@
+Synthetic Division - ArithFuns Package
+
+Efficient polynomial division by linear factors (x - c).
+
+FUNCTIONS:
+  SynthDiv(P, c)            - Divide P by (x - c), return {quotient, remainder}
+  SynthDiv(P, c, 1)         - Include step-by-step work
+  SynthDivPoly(P, c)        - Return just the quotient polynomial
+  SynthDivRem(P, c)         - Return just the remainder (= P(c))
+  SynthDivSteps(P, c)       - Return detailed step structure
+
+TAYLOR POLYNOMIAL (REBASING):
+  PolyRebase(P, a)          - Express P(x) as polynomial in (x - a)
+  PolyTaylor(P, a)          - Same as PolyRebase
+  PolyRebaseSteps(P, a)     - Show repeated synthetic division process
+
+HOW IT WORKS:
+  Synthetic division divides P(x) by (x - c) efficiently.
+  The remainder equals P(c) by the Remainder Theorem.
+  
+  To rebase at x = a, apply synthetic division repeatedly:
+  Each application extracts one Taylor coefficient.
+
+STEP OUTPUT FORMAT:
+  SynthDivSteps returns:
+  {
+    divisor: c,
+    coeffs: {aₙ, ..., a₁, a₀},   # descending for display
+    rows: {...},                  # intermediate calculations
+    quotient: Poly(...),
+    remainder: P(c)
+  }
+
+EXAMPLES:
+  P := Poly({-6, 11, -6, 1})     # x³ - 6x² + 11x - 6 = (x-1)(x-2)(x-3)
+  
+  SynthDiv(P, 1)
+  → {quotient: Poly({6, -5, 1}), remainder: 0}
+  
+  SynthDivRem(P, 2)              → 0 (since x=2 is a root)
+  
+  # Rebase x³ at a = 1: (x-1)³ + 3(x-1)² + 3(x-1) + 1
+  PolyRebase(Poly({0, 0, 0, 1}), 1)
+  → Poly({1, 3, 3, 1})           # coefficients of (x-1)^k
+
+APPLICATIONS:
+  1. Finding rational roots (test candidates)
+  2. Factoring polynomials
+  3. Taylor polynomial computation
+  4. Horner's method (synthetic eval is one row)
+  5. Partial fraction setup
+
+NOTES:
+  - Synthetic division only works for linear divisors (x - c)
+  - For general polynomial division, use PolyDiv
+  - The remainder is always P(c) - this is the Remainder Theorem
+  - Step output shows traditional synthetic division layout

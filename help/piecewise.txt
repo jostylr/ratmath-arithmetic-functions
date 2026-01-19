@@ -1,0 +1,71 @@
+Piecewise Functions - ArithFuns Package
+
+Define and evaluate piecewise and step functions.
+
+CONSTRUCTORS:
+  Piecewise(piece1, ...)    - Create piecewise function
+  Step(x)                   - Heaviside: 0 if x < 0, 1 if x ≥ 0
+  UnitStep(x, a)            - Step at a: 0 if x < a, 1 if x ≥ a
+  Rect(x, a, b)             - Rectangle: 1 if a ≤ x ≤ b
+  Ramp(x)                   - Ramp: max(0, x)
+
+PIECE FORMAT:
+  Each piece is {function, condition}:
+  Piecewise(
+    {x -> x^2, x < 0},
+    {x -> x,   x >= 0}
+  )
+
+EVALUATION:
+  PiecewiseEval(F, x)       - Evaluate at x
+
+UTILITY FUNCTIONS:
+  Clamp(x, lo, hi)          - Clamp x to [lo, hi]
+  Sgn(x)                    - Sign function (alias for Sign)
+
+INDICATOR FUNCTIONS:
+  Chi(x, a, b)              - χ[a,b]: 1 if a ≤ x ≤ b
+  ChiOpen(x, a, b)          - χ(a,b): 1 if a < x < b
+  ChiLeftOpen(x, a, b)      - χ(a,b]: 1 if a < x ≤ b
+  ChiRightOpen(x, a, b)     - χ[a,b): 1 if a ≤ x < b
+
+ARITHMETIC:
+  PiecewiseAdd(F, G)        - Add piecewise functions
+  PiecewiseMul(F, G)        - Multiply
+  PiecewiseCompose(F, G)    - Compose F(G(x))
+
+EXAMPLES:
+  # Absolute value as piecewise
+  F := Piecewise(
+    {x -> -x, x < 0},
+    {x -> x, x >= 0}
+  )
+  PiecewiseEval(F, -3)      → 3
+  PiecewiseEval(F, 5)       → 5
+  
+  # Step functions
+  Step(-2)                  → 0
+  Step(3)                   → 1
+  
+  UnitStep(5, 3)            → 1  (5 ≥ 3)
+  UnitStep(1, 3)            → 0  (1 < 3)
+  
+  # Rectangle/indicator
+  Rect(1.5, 1, 2)           → 1
+  Rect(0, 1, 2)             → 0
+  
+  # Clamping
+  Clamp(5, 0, 3)            → 3
+  Clamp(-2, 0, 3)           → 0
+  Clamp(1, 0, 3)            → 1
+
+PROPERTIES (via decorations):
+  Get(F, "type")            → "piecewise"
+  Get(F, "pieces")          → sequence of pieces
+  Get(F, "breakpoints")     → {a, b, ...} transition points
+
+NOTES:
+  - Pieces are evaluated in order; first matching condition wins
+  - Last piece can use "otherwise" or always-true condition
+  - Step(0) = 1 by convention (right-continuous)
+  - Breakpoints are where the formula changes

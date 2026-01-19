@@ -1,0 +1,81 @@
+Number Theory - ArithFuns Package
+
+Integer and number-theoretic functions.
+
+BASIC OPERATIONS:
+  Abs(x)                    - Absolute value
+  Sign(x)                   - Sign: -1, 0, or 1
+  Floor(x)                  - Floor function ⌊x⌋
+  Ceil(x)                   - Ceiling function ⌈x⌉
+  Round(x)                  - Round to nearest integer
+  Trunc(x)                  - Truncate toward zero
+  Frac(x)                   - Fractional part: x - ⌊x⌋
+
+DIVISIBILITY:
+  Gcd(a, b, ...)            - Greatest common divisor
+  Lcm(a, b, ...)            - Least common multiple
+  ExtGcd(a, b)              - Extended Euclidean: {gcd, x, y}
+  Divides(a, b)             - 1 if a|b, else 0
+  Mod(a, m)                 - a mod m (always ≥ 0)
+  Quot(a, b)                - Integer quotient ⌊a/b⌋
+  DivMod(a, b)              - {quotient, remainder}
+  Coprime(a, b)             - 1 if gcd(a,b) = 1
+
+PRIME NUMBERS:
+  IsPrime(n)                - Primality test (returns 0 or 1)
+  NextPrime(n)              - Smallest prime > n
+  PrevPrime(n)              - Largest prime < n
+  NthPrime(n)               - The nth prime
+  PrimePi(n)                - Count of primes ≤ n
+  Primes(n)                 - First n primes
+  Primes(a, b)              - Primes in range [a, b]
+  Factor(n)                 - Prime factorization as sequence
+  Divisors(n)               - All divisors of n
+  DivisorCount(n)           - τ(n): number of divisors
+  DivisorSum(n)             - σ(n): sum of divisors
+  DivisorSum(n, k)          - σₖ(n): sum of kth powers of divisors
+
+MODULAR ARITHMETIC:
+  ModPow(base, exp, m)      - base^exp mod m (efficient)
+  ModInv(a, m)              - Modular inverse (a⁻¹ mod m)
+  ModMul(a, b, m)           - a·b mod m
+  ModAdd(a, b, m)           - a+b mod m
+  ChineseRem(rems, mods)    - Chinese Remainder Theorem
+  EulerPhi(n)               - Euler's totient φ(n)
+  Mobius(n)                 - Möbius function μ(n)
+  Carmichael(n)             - Carmichael function λ(n)
+
+COMBINATORICS:
+  Factorial(n)              - n!
+  Binomial(n, k)            - C(n,k) = n choose k
+  Permutations(n, k)        - P(n,k) = n!/(n-k)!
+  Catalan(n)                - nth Catalan number
+  Fibonacci(n)              - nth Fibonacci number
+  Lucas(n)                  - nth Lucas number
+
+SPECIAL SEQUENCES:
+  Bernoulli(n)              - nth Bernoulli number (rational)
+  Harmonic(n)               - nth Harmonic number (rational)
+  Stirling1(n, k)           - Stirling numbers 1st kind
+  Stirling2(n, k)           - Stirling numbers 2nd kind
+  Bell(n)                   - nth Bell number
+  Partition(n)              - Integer partitions of n
+
+EXAMPLES:
+  Gcd(48, 18)               → 6
+  ExtGcd(35, 15)            → {5, 1, -2}  # 35(1) + 15(-2) = 5
+  
+  Factor(60)                → {2, 2, 3, 5}
+  Divisors(12)              → {1, 2, 3, 4, 6, 12}
+  
+  ModPow(3, 100, 7)         → 4
+  EulerPhi(12)              → 4
+  
+  Binomial(10, 3)           → 120
+  Fibonacci(10)             → 55
+
+NOTES:
+  - Gcd and Lcm accept multiple arguments
+  - ExtGcd returns {gcd, x, y} where ax + by = gcd
+  - Factor returns primes with repetition
+  - All results are exact (no floating point)

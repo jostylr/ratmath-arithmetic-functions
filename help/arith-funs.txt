@@ -1,0 +1,38 @@
+ArithFuns Package - Arithmetic Functions
+
+Provides arithmetic functions for rational numbers and integers including
+polynomials, number theory, rational functions, and piecewise operations.
+
+CATEGORIES:
+  Polynomials       - Poly, PolyEval, SynthDiv, PolyRebase, PolyDescartes
+  Number Theory     - Gcd, Lcm, Factor, IsPrime, ModPow, EulerPhi
+  Rational Funcs    - RatFunc, PartialFrac
+  Piecewise         - Piecewise, Step, Rect, Clamp
+  Core Arithmetic   - Abs, Sign, Floor, Ceil, Max, Min
+
+QUICK START:
+  LOAD arith-funs
+
+  # Create polynomial: 1 + 2x + 3x²
+  P := Poly({1, 2, 3})
+  PolyEval(P, 2)           → 17
+
+  # Synthetic division by (x - 3)
+  SynthDiv(P, 3)           → {quotient, remainder}
+
+  # Number theory
+  Gcd(24, 36)              → 12
+  Factor(60)               → {2, 2, 3, 5}
+  IsPrime(17)              → 1
+
+HELP TOPICS:
+  HELP polynomial          - Polynomial operations
+  HELP synth-div           - Synthetic division details
+  HELP number-theory       - Number-theoretic functions
+  HELP rational-func       - Rational function operations
+  HELP piecewise           - Piecewise and step functions
+
+NOTES:
+  - Polynomials use ascending coefficient order: {a₀, a₁, a₂, ...}
+  - Many functions accept optional showSteps parameter for detailed output
+  - Use decorations to inspect polynomial properties: Get(P, "degree")

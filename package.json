@@ -1,0 +1,37 @@
+{
+  "name": "@ratmath/arith-funs",
+  "version": "0.1.0",
+  "description": "Arithmetic functions for RatMath: polynomials, number theory, rational functions, piecewise functions",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./src/ratmath-module.js": "./src/ratmath-module.js",
+    "./src/polynomial.js": "./src/polynomial.js",
+    "./src/number-theory.js": "./src/number-theory.js",
+    "./src/rational-func.js": "./src/rational-func.js",
+    "./src/piecewise.js": "./src/piecewise.js",
+    "./src/core-arith.js": "./src/core-arith.js"
+  },
+  "scripts": {
+    "test": "bun test tests/"
+  },
+  "dependencies": {
+    "@ratmath/core": "workspace:*",
+    "@ratmath/algebra": "workspace:*",
+    "@ratmath/stdlib": "workspace:*"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "keywords": [
+    "ratmath",
+    "polynomial",
+    "number-theory",
+    "rational-functions",
+    "piecewise",
+    "arithmetic"
+  ],
+  "author": "",
+  "license": "MIT"
+}
