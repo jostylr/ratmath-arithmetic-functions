@@ -23,7 +23,7 @@ function toRational(val) {
 function compareValues(a, b) {
     const ra = toRational(a);
     const rb = toRational(b);
-    return ra.compare(rb);
+    return ra.compareTo(rb);
 }
 
 export const PiecewiseFunctions = {
@@ -35,7 +35,7 @@ export const PiecewiseFunctions = {
         handler: function (x) {
             const xRat = toRational(x);
             // Step(x) = 0 if x < 0, 1 if x >= 0
-            return new Integer(xRat.compare(Rational.zero) >= 0 ? 1n : 0n);
+            return new Integer(xRat.compareTo(Rational.zero) >= 0 ? 1n : 0n);
         },
         params: ["x"],
         doc: "Heaviside step function: 0 if x < 0, 1 if x ≥ 0"
@@ -49,7 +49,7 @@ export const PiecewiseFunctions = {
         handler: function (x, a) {
             const xRat = toRational(x);
             const aRat = a !== undefined ? toRational(a) : Rational.zero;
-            return new Integer(xRat.compare(aRat) >= 0 ? 1n : 0n);
+            return new Integer(xRat.compareTo(aRat) >= 0 ? 1n : 0n);
         },
         params: ["x", "a?"],
         doc: "Unit step at a: 0 if x < a, 1 if x ≥ a"
@@ -65,8 +65,8 @@ export const PiecewiseFunctions = {
             const aRat = toRational(a);
             const bRat = toRational(b);
             
-            const geA = xRat.compare(aRat) >= 0;
-            const leB = xRat.compare(bRat) <= 0;
+            const geA = xRat.compareTo(aRat) >= 0;
+            const leB = xRat.compareTo(bRat) <= 0;
             
             return new Integer(geA && leB ? 1n : 0n);
         },
@@ -81,7 +81,7 @@ export const PiecewiseFunctions = {
         type: 'js',
         handler: function (x) {
             const xRat = toRational(x);
-            if (xRat.compare(Rational.zero) <= 0) {
+            if (xRat.compareTo(Rational.zero) <= 0) {
                 return new Integer(0n);
             }
             return xRat;
@@ -100,8 +100,8 @@ export const PiecewiseFunctions = {
             const loRat = toRational(lo);
             const hiRat = toRational(hi);
             
-            if (xRat.compare(loRat) < 0) return loRat;
-            if (xRat.compare(hiRat) > 0) return hiRat;
+            if (xRat.compareTo(loRat) < 0) return loRat;
+            if (xRat.compareTo(hiRat) > 0) return hiRat;
             return xRat;
         },
         params: ["x", "lo", "hi"],
@@ -115,7 +115,7 @@ export const PiecewiseFunctions = {
         type: 'js',
         handler: function (x) {
             const xRat = toRational(x);
-            const cmp = xRat.compare(Rational.zero);
+            const cmp = xRat.compareTo(Rational.zero);
             return new Integer(BigInt(cmp));
         },
         params: ["x"],
@@ -132,8 +132,8 @@ export const PiecewiseFunctions = {
             const aRat = toRational(a);
             const bRat = toRational(b);
             
-            const geA = xRat.compare(aRat) >= 0;
-            const leB = xRat.compare(bRat) <= 0;
+            const geA = xRat.compareTo(aRat) >= 0;
+            const leB = xRat.compareTo(bRat) <= 0;
             
             return new Integer(geA && leB ? 1n : 0n);
         },
@@ -151,8 +151,8 @@ export const PiecewiseFunctions = {
             const aRat = toRational(a);
             const bRat = toRational(b);
             
-            const gtA = xRat.compare(aRat) > 0;
-            const ltB = xRat.compare(bRat) < 0;
+            const gtA = xRat.compareTo(aRat) > 0;
+            const ltB = xRat.compareTo(bRat) < 0;
             
             return new Integer(gtA && ltB ? 1n : 0n);
         },
@@ -170,8 +170,8 @@ export const PiecewiseFunctions = {
             const aRat = toRational(a);
             const bRat = toRational(b);
             
-            const gtA = xRat.compare(aRat) > 0;
-            const leB = xRat.compare(bRat) <= 0;
+            const gtA = xRat.compareTo(aRat) > 0;
+            const leB = xRat.compareTo(bRat) <= 0;
             
             return new Integer(gtA && leB ? 1n : 0n);
         },
@@ -189,8 +189,8 @@ export const PiecewiseFunctions = {
             const aRat = toRational(a);
             const bRat = toRational(b);
             
-            const geA = xRat.compare(aRat) >= 0;
-            const ltB = xRat.compare(bRat) < 0;
+            const geA = xRat.compareTo(aRat) >= 0;
+            const ltB = xRat.compareTo(bRat) < 0;
             
             return new Integer(geA && ltB ? 1n : 0n);
         },
@@ -199,30 +199,47 @@ export const PiecewiseFunctions = {
     },
 
     /**
-     * Create piecewise function
-     * TODO: Full implementation requires condition parsing
+     * Create piecewise function from condition/value pairs
+     * Usage: Piecewise(cond1, val1, cond2, val2, ..., default?)
+     * Conditions are evaluated in order; first true condition's value is returned
      */
     Piecewise: {
         type: 'js',
         handler: function () {
             const allArgs = this._currentCallScope?.get("@@");
-            if (!allArgs || allArgs.type !== 'sequence') {
-                throw new Error("Piecewise requires piece definitions");
+            if (!allArgs || allArgs.type !== 'sequence' || allArgs.values.length < 2) {
+                throw new Error("Piecewise requires at least one condition/value pair");
             }
             
-            // Store the pieces for later evaluation
+            const args = allArgs.values;
+            const pieces = [];
+            
+            // Parse condition/value pairs
+            // If odd number of args, last one is the default (else) value
+            let i = 0;
+            while (i < args.length - 1) {
+                const condition = args[i];
+                const value = args[i + 1];
+                pieces.push({ condition, value });
+                i += 2;
+            }
+            
+            // If odd number of args, the last is the default value
+            const defaultValue = args.length % 2 === 1 ? args[args.length - 1] : null;
+            
             return {
                 type: 'piecewise',
-                pieces: allArgs.values
+                pieces: pieces,
+                defaultValue: defaultValue
             };
         },
-        params: ["piece1", "piece2?", "piece3?", "piece4?", "piece5?"],
-        doc: "Create piecewise function from {function, condition} pairs"
+        params: ["cond1", "val1"],
+        doc: "Create piecewise function: Piecewise(cond1, val1, cond2, val2, ..., default?)"
     },
 
     /**
-     * Evaluate piecewise function
-     * TODO: Full implementation requires condition evaluation
+     * Evaluate piecewise function at x
+     * Evaluates each condition in order and returns the value for the first true condition
      */
     PiecewiseEval: {
         type: 'js',
@@ -231,10 +248,37 @@ export const PiecewiseFunctions = {
                 throw new Error("Expected piecewise function");
             }
             
-            // TODO: Evaluate conditions and apply correct piece
-            return { type: 'string', value: 'PiecewiseEval not yet fully implemented' };
+            // Evaluate each condition
+            for (const piece of f.pieces) {
+                // Condition should be an Integer (1 for true, 0 for false)
+                // from comparison operators
+                let conditionResult;
+                
+                if (piece.condition instanceof Integer) {
+                    conditionResult = piece.condition.value !== 0n;
+                } else if (typeof piece.condition === 'number') {
+                    conditionResult = piece.condition !== 0;
+                } else if (piece.condition?.value !== undefined) {
+                    conditionResult = piece.condition.value !== 0n && piece.condition.value !== 0;
+                } else {
+                    // Truthy check for other types
+                    conditionResult = Boolean(piece.condition);
+                }
+                
+                if (conditionResult) {
+                    return piece.value;
+                }
+            }
+            
+            // Return default value if no condition matched
+            if (f.defaultValue !== null) {
+                return f.defaultValue;
+            }
+            
+            throw new Error("No matching condition in piecewise function");
         },
         params: ["f", "x"],
         doc: "Evaluate piecewise function at x"
     },
+    // Note: If function is defined in stdlib/src/core.js with lazy evaluation
 };

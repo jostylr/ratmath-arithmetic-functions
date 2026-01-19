@@ -77,6 +77,77 @@ function hornerEval(coeffs, x) {
 }
 
 /**
+ * Efficient power computation using binary exponentiation
+ * Computes x^n for Rational x and non-negative integer n
+ */
+function rationalPow(x, n) {
+    if (n === 0) return new Rational(1n, 1n);
+    if (n === 1) return x;
+    
+    let result = new Rational(1n, 1n);
+    let base = x;
+    let exp = n;
+    
+    while (exp > 0) {
+        if (exp & 1) {
+            result = result.multiply(base);
+        }
+        base = base.multiply(base);
+        exp = exp >> 1;
+    }
+    
+    return result;
+}
+
+/**
+ * Evaluate sparse polynomial efficiently
+ * Uses binary exponentiation for computing powers and sorts terms
+ * to reuse intermediate power computations
+ */
+function sparseEval(terms, x) {
+    if (terms.size === 0) return new Rational(0n, 1n);
+    
+    const xRat = toRational(x);
+    
+    // Special case: x = 0
+    if (xRat.numerator === 0n) {
+        return terms.get(0) || new Rational(0n, 1n);
+    }
+    
+    // Sort degrees for potential power reuse
+    const sortedDegrees = Array.from(terms.keys()).sort((a, b) => a - b);
+    
+    // For very sparse polynomials, use binary exponentiation per term
+    // For moderately sparse, compute powers incrementally
+    let result = new Rational(0n, 1n);
+    
+    if (sortedDegrees.length <= 3 || sortedDegrees[sortedDegrees.length - 1] > 100) {
+        // Very sparse or high degree: use binary exponentiation
+        for (const deg of sortedDegrees) {
+            const coeff = terms.get(deg);
+            const power = rationalPow(xRat, deg);
+            result = result.add(coeff.multiply(power));
+        }
+    } else {
+        // Compute powers incrementally, caching as we go
+        let currentPower = new Rational(1n, 1n);  // x^0
+        let currentDeg = 0;
+        
+        for (const deg of sortedDegrees) {
+            // Advance power from currentDeg to deg
+            while (currentDeg < deg) {
+                currentPower = currentPower.multiply(xRat);
+                currentDeg++;
+            }
+            const coeff = terms.get(deg);
+            result = result.add(coeff.multiply(currentPower));
+        }
+    }
+    
+    return result;
+}
+
+/**
  * Synthetic division by (x - c)
  * Returns { quotient: coeffs[], remainder: Rational }
  */
@@ -132,6 +203,85 @@ export const PolynomialFunctions = {
         },
         params: ["coeffs", "var?"],
         doc: "Create polynomial from coefficients {a₀, a₁, ...} in ascending order"
+    },
+
+    /**
+     * Create sparse polynomial from (coeff, degree) pairs
+     * PolySparse(5, 10, 3, 2, 1, 0) creates 5x^10 + 3x^2 + 1
+     */
+    PolySparse: {
+        type: 'js',
+        handler: function () {
+            // Get all arguments via @@ sequence
+            const allArgs = this._currentCallScope?.get("@@");
+            if (!allArgs || allArgs.type !== 'sequence' || allArgs.values.length < 2) {
+                throw new Error("PolySparse requires pairs of (coefficient, degree)");
+            }
+            
+            const args = allArgs.values;
+            if (args.length % 2 !== 0) {
+                throw new Error("PolySparse requires pairs of (coefficient, degree)");
+            }
+            
+            // Build sparse representation: Map<degree, coefficient>
+            const sparseTerms = new Map();
+            let maxDegree = 0;
+            
+            for (let i = 0; i < args.length; i += 2) {
+                const coeff = toRational(args[i]);
+                const deg = Number(args[i + 1] instanceof Integer ? args[i + 1].value : args[i + 1]);
+                
+                if (deg < 0) {
+                    throw new Error("Polynomial degree must be non-negative");
+                }
+                
+                if (coeff.numerator !== 0n) {
+                    sparseTerms.set(deg, coeff);
+                    if (deg > maxDegree) maxDegree = deg;
+                }
+            }
+            
+            // Create polynomial with sparse representation
+            const polyFunc = {
+                type: 'polynomial',
+                sparse: true,
+                terms: sparseTerms,  // Map<degree, coefficient>
+                degree: maxDegree,
+                variable: "x",
+                // Convert to dense coefficients on demand
+                get coeffs() {
+                    const dense = [];
+                    for (let i = 0; i <= this.degree; i++) {
+                        dense.push(this.terms.get(i) || new Rational(0n, 1n));
+                    }
+                    return makeCoeffSequence(dense);
+                },
+                // Optimized sparse evaluation
+                call: (x) => sparseEval(sparseTerms, x)
+            };
+            
+            return polyFunc;
+        },
+        params: ["coeff1", "deg1", "..."],
+        doc: "Create sparse polynomial: PolySparse(5, 10, 3, 2, 1, 0) → 5x¹⁰ + 3x² + 1"
+    },
+
+    /**
+     * Evaluate sparse polynomial efficiently
+     * Uses binary exponentiation for computing powers
+     */
+    PolySparseEval: {
+        type: 'js',
+        handler: function (poly, x) {
+            if (poly?.sparse && poly?.terms) {
+                return sparseEval(poly.terms, x);
+            }
+            // Fall back to regular evaluation for dense polynomials
+            const coeffs = extractCoeffs(poly?.coeffs || poly);
+            return hornerEval(coeffs, x);
+        },
+        params: ["poly", "x"],
+        doc: "Evaluate polynomial, optimized for sparse polynomials"
     },
 
     /**
